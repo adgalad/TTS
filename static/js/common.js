@@ -41,9 +41,11 @@ function file_field(){
       }
 }
 
+
 const textarea = $("#id_text")
 function synthesize(){
-    url = "http://0.0.0.0:8000/api/processAudio/test.mp3?text="+textarea.val()
+    host = '52.90.139.14:8000'
+    url = "http://"+host+"/api/processAudio/test.mp3?text="+textarea.val()
     $('audio #source').attr('src', url);
     $('audio').get(0).load();
     $('audio').get(0).play();
