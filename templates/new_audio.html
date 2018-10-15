@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo audio{% endblock %}
+
+{% block navbar %}
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'audios' %}">Mis audios</a>
+    </li>
+    <li class="nav-item active">
+      <a class="nav-link" href="{% url 'newAudio' %}">Crear audio<span class="sr-only">(current)</span></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'listReview' %}">En revisión</a>
+    </li>
+{% endblock navbar %}
+
+{% block content %}
+    <div class="container" style="margin-top: 2%">
+        <h2> Crear Audio </h2>
+        <br>
+        <p>Selecciona la fuente del texto que será utilizado para crear el nuevo audio</p>
+        <br>
+        <div class="row" style="margin-bottom: 30px;" >
+          <div class="col-md-4 col-sm-2 col-xs-2"> </div>
+          <div class="col-md-4 col-sm-8 col-xs-8">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p style="color:red">{{ error }}</p>
+                    {% endfor %}
+                    <br>
+                {% endfor %}
+                <button class="btn btn-primary" type="submit">Continuar</button>
+            </form>
+          </div>
+          <div class="col-md-4 col-sm-2 col-xs-2"> </div>
+        </div>
+    </div>
+    
+
+{% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#id_type').change(file_field)
+            file_field()    
+        })
+    </script>
+{% endblock scripts %}

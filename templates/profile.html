@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load mathfilters %}
+
+{% block content %}
+    <a href="/"><button class="btn btn-primary"> < Back</button></a><br><br>
+    {% for message in messages %}
+        <div style="color:red"> {{ message }} </div>
+    {% endfor %}
+    <br>
+    <table border="1" class="table">
+        <tbody>
+            <tr>
+                <td>
+                    Email
+                </td>
+                <td>
+                    {{request.user.email}}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Username
+                </td>
+                <td>
+                    {{request.user.username}}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    
+{% endblock content %}

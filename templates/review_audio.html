@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Revision de audio{% endblock %}
+
+{% block style %}
+    {{ block.super }}
+    <style type="text/css">
+        /* The whole thing */
+        .custom-menu {
+            display: none;
+            z-index: 1000;
+            position: absolute;
+            overflow: hidden;
+            border: 1px solid #CCC;
+            white-space: nowrap;
+            font-family: sans-serif;
+            background: #FFF;
+            color: #333;
+            border-radius: 5px;
+            padding: 0;
+        }
+
+        /* Each of the items in the list */
+        .custom-menu li {
+            padding: 8px 12px;
+            cursor: pointer;
+            list-style-type: none;
+            transition: all .3s ease;
+            user-select: none;
+        }
+
+        .custom-menu li:hover {
+            background-color: #DEF;
+        }
+    </style>
+{% endblock style %}
+
+{% block navbar %}
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'audios' %}">Mis audios</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'newAudio' %}">Crear audio<span class="sr-only">(current)</span></a>
+    </li>
+    <li class="nav-item active">
+      <a class="nav-link" href="{% url 'listReview' %}">En revisión</a>
+    </li>
+{% endblock navbar %}
+
+{% block content %}
+    <div class="container" align="center" style="margin-top: 2%">
+        <h2>Revisión de audio</h2>
+        <div class="row" style="margin-top: 6%">
+            <div class="col-md-8">
+                <textarea style="width: 100%; min-height: 200px" class="form-control">{{audio.text}}</textarea>
+            </div>
+            <div class="col-md-4">
+                <div class="row" style="margin-top: 5%; margin-bottom: 10%">
+                    <div class="col-md-6 col-sm-6 col-xs-6">Creado por</div>
+                    <div class="col-md-6 col-sm-6 col-xs-6">{{audio.created_by}}</div>
+                </div>
+                <div class="row" style="margin-top: 5%; margin-bottom: 10%">
+                    <div class="col-md-6 col-sm-6 col-xs-6">Fecha</div>
+                    <div class="col-md-6 col-sm-6 col-xs-6">{{audio.created_at | date:"Y/m/d H:i"}}</div>
+                </div>
+                <div class="row" style="margin-top: 5%; margin-bottom: 10%">
+                    <div class="col-md-6 col-sm-6 col-xs-6">Audio</div>
+                    <div class="col-md-6 col-sm-6 col-xs-6">
+                        <audio controls>
+                            <source id="source" src="{{audio.url}}" type="audio/mp3">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br><br>
+        <div>
+            <a href="{% url 'rejectAudio' audio.pk  %}" class="btn btn-danger" onclick="return confirm('Si rechaza este audio será eliminado de la base de datos\n¿Está seguro de continuar?')">
+                <i class="fa fa-times"></i> Rechazar
+            </a>
+            <a href="#" class="btn btn-primary" onclick="showModal()"><i class="fa fa-clock"></i> </a>
+            <a href="{% url 'aceceptAudio' audio.pk  %}" class="btn btn-success" onclick="return confirm('¿Está seguro de aceptar este audio?')">
+                <i class="fa fa-check"></i> Aprobar
+            </a>
+        </div>
+    </div>
+
+{% endblock content %}
+

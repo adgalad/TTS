@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block style %}
+    {{ block.super }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.0/jquery.contextMenu.min.css" rel="stylesheet">
+{% endblock style %}
+
+{% block navbar %}
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'audios' %}">Mis audios</a>
+    </li>
+    <li class="nav-item {%if title == 'Crear audio' %}active{%endif%}">
+      <a class="nav-link" href="{% url 'newAudio' %}">Crear audio<span class="sr-only">(current)</span></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'listReview' %}">En revisión</a>
+    </li>
+{% endblock navbar %}
+
+{% block content %}
+    <div class="container" align="center" style="margin-top: 2%">
+        <h2>{{title}}</h2>
+        <div class="row" style="margin-top: 3%">
+            <div class="col-12 col-sm-12">
+                <div class="row">
+                    <div class="dropdown show col-auto">
+                      <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Volumen
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'volume', 'x-soft')" href="#">Muy bajo (30%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'volume', 'soft')" href="#">Bajo (50%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'volume', 'medium')" href="#">Mediano (80%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'volume', 'loud')" href="#">Alto (90%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'volume', 'x-loud')" href="#">Muy alto(100%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'volume', '')" href="#">Personalizado (del 1 al 100)</a>
+                        
+
+                      </div>
+                    </div>
+                    <div class="dropdown show col-auto">
+                      <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Pausa
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'break', 'strength', 'x-weak')" href="#">Muy corta</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'break', 'strength', 'weak')" href="#">Corta</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'break', 'strength', 'medium')" href="#">Mediana</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'break', 'strength', 'strong')" href="#">Larga</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'break', 'strength', 'x-strong')" href="#">Muy larga</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'break', 'time', '1000ms')" href="#">Por tiempo (en ms o segundos)</a>
+                      </div>
+                    </div>
+                    
+                    <div class="dropdown show col-auto">
+                      <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Velocidad
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'rate', 'x-slow')" href="#">Muy lento (-50%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'rate', 'slow')" href="#">Lento (-25%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'rate', 'fast')" href="#">Rapido (25%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'rate', 'x-fast')" href="#">Muy rapido(50%)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'rate', '2')" href="#">Palabras por segundo</a>
+                      </div>
+                    </div>
+                    <div class="dropdown show col-auto">
+                      <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Tono
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'pitch', 'x-low')" href="#">Muy bajo (-12 semitonos)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'pitch', 'low')" href="#">Lento (-6 semitonos)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'pitch', 'high')" href="#">Rapido (6 semitonos)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'pitch', 'x-high')" href="#">Muy rapido(12 semitonos)</a>
+                        <a class="dropdown-item" onclick="onclickmenu(event, 'prosody', 'pitch', '1Hz')" href="#">Personalizado (ejemplo: -10Hz, 10st)</a>
+
+                      </div>
+                    </div>
+                </div>
+                <br>
+                <form id="text_to_speech" method="post">
+                    {% csrf_token %}
+                    {{form.text}}
+                    <div id="popup" class="modal fade" role="dialog" style="display: none">
+                        <div class="modal-dialog modal-lg openModal" id="modal" style="max-width: 60%; min-width: 300px">
+
+                            <div class="modal-content" style="background-color: white !important;">
+                                <div class="container" style="padding: 4%">
+                                    <h3>Datos del audio</h3>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            {{form.name.label}}
+                                        </div>
+                                        <div class="col-9">
+                                            {{form.name}}
+                                            {% for error in form.name.errors %}
+                                                <p style="color:red">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            {{form.description.label}}
+                                        </div>
+                                        <div class="col-9">
+                                            {{form.description}}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            {{form.format.label}}
+                                        </div>
+                                        <div class="col-9">
+                                            <div class="row">
+                                                <div class="col-1 col-sm-2 col-xs-3">
+                                                    <label for="id_format_0">
+                                                        <input type="radio" name="format"
+                                                               value="mp3" class="form-control"
+                                                               {% if form.format.value == 'mp3' %} 
+                                                                    checked="true" 
+                                                               {% endif %}
+                                                               required="" id="id_format_0">mp3
+                                                    </label>
+                                                </div>
+                                                <div class="col-1 col-sm-2 col-xs-3">
+                                                    <label for="id_format_1">
+                                                        <input type="radio" name="format"
+                                                               value="wav" class="form-control"
+                                                               {% if form.format.value == 'wav' %} 
+                                                                    checked="true" 
+                                                               {% endif %}
+                                                               required="" id="id_format_1">wav
+                                                    </label>
+                                                </div>
+                                                <div class="col-1 col-sm-2 col-xs-3">
+                                                    <label for="id_format_2">
+                                                        <input type="radio" name="format"
+                                                               value="flac" class="form-control"
+                                                               {% if form.format.value == 'flac' %} 
+                                                                    checked="true" 
+                                                               {% endif %}
+                                                                required="" id="id_format_2">flac
+                                                    </label>
+                                                </div>
+                                                <div class="col-1 col-sm-2 col-xs-3">
+                                                    <label for="id_format_3">
+                                                        <input type="radio" name="format"
+                                                               value="ogg" class="form-control"
+                                                               {% if form.format.value == 'ogg' %} 
+                                                                    checked="true" 
+                                                               {% endif %}
+                                                               required="" id="id_format_3">ogg
+                                                    </label>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row" align="center">
+                                        <div class="col-4"></div>
+                                        <div class="col-4">
+                                            <button type="submit" class="btn btn-primary" form="text_to_speech">Guardar audio</button>
+                                        </div>
+                                        <div class="col-4"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                </form>
+                <div class="row">
+                    <div class="col-xl-3 col-lg-3 col-md-2 col-12 col-sm-12"></div>
+                    
+                    <div class="col-xl-2 col-lg-2 col-md-3 col-12 col-sm-12" style="margin-top: 5%;">
+                        <button class="btn btn-primary" onclick="synthesize()">Vista previa</button>
+                    </div>
+                    <div class="col-xl-1 col-lg-1 col-md-4 col-12 col-sm-12" style="margin-top: 5%;">
+                        <audio controls preload="none">
+                            <source id="source" 
+                                    src="{% if audio %}{{audio.url}}{% endif %}"
+                                    type="audio/{% if audio %}{{audio.format}}{% else %}mp3{% endif %}">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="col-4">
+            </div>
+        </div>
+        <br><br>
+        <div>
+            <button class="btn btn-primary" onclick="showModal()">Continuar</button>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="/static/js/edit_area/edit_area_full.js"></script>
+    {{ block.super }}
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#popup').on('shown.bs.modal', function (e) {
+                $('#id_name').focus()
+            });
+            {% if form.name.errors or form.description.errors or form.format.errors %}
+                if (textarea.val() && $("#id_name").val()){
+                    $('#popup').modal('show')
+                }
+            {% endif %}
+        })
+
+        $(document).delegate('#id_text', 'keydown', function(e) {
+          var keyCode = e.keyCode || e.which;
+
+          if (keyCode == 9) {
+            e.preventDefault();
+            var start = this.selectionStart;
+            var end = this.selectionEnd;
+
+            // set textarea value to: text before caret + tab + text after caret
+            $(this).val($(this).val().substring(0, start)
+                        + "\t"
+                        + $(this).val().substring(end));
+
+            // put caret at right position again
+            this.selectionStart =
+            this.selectionEnd = start + 1;
+          }
+        });
+    </script>
+{% endblock scripts %}

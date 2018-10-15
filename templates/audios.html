@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %} Audios {% endblock %}
+
+{% block navbar %}
+    <li class="nav-item active">
+      <a class="nav-link" href="{% url 'audios' %}">Mis audios<span class="sr-only">(current)</span></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'newAudio' %}">Crear audio</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'listReview' %}">En revisión</a>
+    </li>
+{% endblock navbar %}
+
+{% block style %}
+    {{ block.super }}
+    <style type="text/css">
+        .pagination-info{
+            display: none !important;
+        }
+        td {
+            text-align: left;
+            height: 50px;
+        }
+    </style>
+{% endblock style %}
+
+{% block content %}
+    <div class="container" align="center" style="margin-top: 2%;">
+        <p align="left" style="width:80%">Estos son los audios que has creado hasta ahora. Puedes visualizar el estado de aprobación en el que se encuentran y descargarlos nuevamente si es necesario.</p>
+        <table class="table table-striped" 
+               data-classes="table-no-bordered"
+               data-pagination="true"
+               data-page-size="10"
+               data-toggle="table" 
+               data-remember-order="true"
+               data-search="true"
+               style="width:100% !important">
+            <thead style="background-color: gray;color: white;">
+                <tr>
+                    <th data-field="name" data-sortable="true" data-width="200px">Nombre</th>
+                    <th data-sortable="true">Descripción</th>
+                    <th data-field="date" data-width="100px" data-sortable="true">Fecha creación</th>
+                    <th data-sortable="true" data-width="100px">Estado</th>
+                    <th data-width="100px">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for audio in audios %}
+                    <tr>
+                        <td>{{audio.name}}.{{audio.format}}</td>
+                        <td>
+                            {% if audio.description %}
+                                {{audio.description}}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{audio.created_at | date:"Y/m/d"}}</td>
+                        <td>{{audio.status}}</td>
+                        <td>
+                            <a href="{{audio.url}}" download><i class="fa fa-download"></i></a>
+                            &nbsp;
+                            <a href="#" onclick="play('{{audio.url}}')">
+                                <i class="fa fa-play"></i>
+                            </a>
+                            &nbsp;
+                            {% if audio.status != "Aprobado" %}
+                                <a href="{% url 'editAudio' audio.pk %}">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                {% empty %}
+                    <tr class="no-records-found"><td colspan="5">No hay audios disponibles</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock content %}
