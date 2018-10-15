@@ -1,7 +1,7 @@
 import json
 import os
 import tempfile
-import textract
+# import textract
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -92,7 +92,8 @@ class NewAudio(forms.Form):
         with open(temp_file_name, "wb") as file:
           file.write(memfile.read())
         try:
-          text = textract.process(temp_file_name).decode('utf-8')
+            pass
+          # text = textract.process(temp_file_name).decode('utf-8')
         except Exception as e:
           raise forms.ValidationError("El archivo es invalido.")
         os.remove(temp_file_name)
