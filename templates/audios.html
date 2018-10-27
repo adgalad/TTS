@@ -6,12 +6,16 @@
     <li class="nav-item active">
       <a class="nav-link" href="{% url 'audios' %}">Mis audios<span class="sr-only">(current)</span></a>
     </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'newAudio' %}">Crear audio</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'listReview' %}">En revisión</a>
-    </li>
+    {% if perms.audio.can_create %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'newAudio' %}">Crear audio</a>
+        </li>
+    {% endif %}
+    {% if perms.audio.can_aprove %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'listReview' %}">En revisión</a>
+        </li>
+    {% endif %}
 {% endblock navbar %}
 
 {% block style %}
@@ -61,13 +65,19 @@
                         <td>{{audio.created_at | date:"Y/m/d"}}</td>
                         <td>{{audio.status}}</td>
                         <td>
-                            <a href="{{audio.url}}" download><i class="fa fa-download"></i></a>
+                            {% if perms.audio.can_download %}
+                            <a href="{% url 'downloadAudio' audio.pk %}" download>
+                                <i class="fa fa-download"></i>
+                            </a>
                             &nbsp;
-                            <a href="#" onclick="play('{{audio.url}}')">
+                            {% endif %}
+                            {% if perms.audio.can_hear %}
+                            <a href="#" onclick="play('{% url 'downloadAudio' audio.pk %}')">
                                 <i class="fa fa-play"></i>
                             </a>
                             &nbsp;
-                            {% if audio.status != "Aprobado" %}
+                            {% endif %}
+                            {% if audio.status != "Aprobado" and perms.audio.can_edit %}
                                 <a href="{% url 'editAudio' audio.pk %}">
                                     <i class="fa fa-edit"></i>
                                 </a>

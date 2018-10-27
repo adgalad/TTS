@@ -6,9 +6,10 @@ from django.http import JsonResponse
 from watson_developer_cloud import WatsonApiException
 
 
+
 class TextToSpeech(TextToSpeechV1):
 
-    voice = "es-LA_SofiaVoice"
+    voice = "es-US_SofiaVoice"
     format = 'audio/mp3'
 
     def __init__(self, *args, **kwargs):

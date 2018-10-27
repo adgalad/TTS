@@ -10,6 +10,7 @@ from django.contrib.auth import login as login_auth
 from django.contrib.auth import logout as logout_auth
 from django.http import JsonResponse
 from django.http import HttpResponseServerError
+from django.http.response import HttpResponse
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -146,7 +147,23 @@ class Audio:
       form = forms.CreateAudio(instance=audio)
     return render(request, "create_audio.html", {"form": form, 'audio': audio, 'title':'Modificar audio'})
 
+  def download(request, pk):
+    try: 
+      audio = Audio.get(pk)
+    except:
+      raise PermissionDenied
+
+
+    content = audio.getAudioContent()
+    response = HttpResponse()
+    response.write(content)
+    response['Content-Disposition'] = 'inline; filename="%s"'%str(audio)
+    response['Content-Length'] = len(content)
+    response['Content-Type'] = format("audio/mp3")
+    return response
+
   def list(request):
+    # print(request.build_absolute_uri())
     return render(request, "audios.html", {
         "audios": request.user.audios.all().order_by('-created_at')
       })

@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 from django.conf.urls.static import static
 
@@ -24,7 +24,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
     url(r'^$', views.index, name="index"),
-    
     url(r'^login/$', views.User.login, name="login"),
     url(r'^signup/$', views.User.signup, name="signup"),
     url(r'^logout/$', views.User.logout, name="logout"),
@@ -39,7 +38,8 @@ urlpatterns = [
     url(r'^audio/review/(?P<pk>\d+)$', views.Audio.review, name="review"),
     url(r'^audio/delete/(?P<pk>\d+)$', views.Audio.reject, name="rejectAudio"),
     url(r'^audio/accept/(?P<pk>\d+)$', views.Audio.accept, name="aceceptAudio"),
-    url(r'^audio/accept/(?P<pk>\d+)$', views.Audio.accept, name="aceceptAudio"),
+    url(r'^audio/download/(?P<pk>\d+)$', views.Audio.download, name="downloadAudio"),
+
 
     url(r'^api/processAudio/test\.mp3$', views.TTS.process, name="processAudio")
 

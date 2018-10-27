@@ -2,6 +2,7 @@ import json
 import random
 import threading
 import os
+import io
 
 from subprocess import check_output 
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -12,8 +13,14 @@ from django.core.files.base import ContentFile
 
 from TTS.settings import DEFAULT_FROM_EMAIL, MEDIA_ROOT
 from .watson_text_to_speech import text_to_specch
-# Create your models here.
 
+import ibm_boto3
+from ibm_botocore.client import Config
+
+
+
+
+# Create your models here.
 class EmailThread(threading.Thread):
     def __init__(self, subject, message, html_message, recipient_list):
         self.subject = subject
@@ -69,6 +76,7 @@ class MyUserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+
 class User(AbstractBaseUser, PermissionsMixin):
     
     is_staff = models.BooleanField(
@@ -92,7 +100,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     verified     = models.BooleanField(default=False)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
-
 
     USERNAME_FIELD = 'email'
     objects = MyUserManager()
@@ -118,19 +125,32 @@ class User(AbstractBaseUser, PermissionsMixin):
 def fileName(instance, filename):
     return 'audios/user_{0}/{1}'.format(instance.created_by.pk, filename)
 
+
+
 class Audio(models.Model):
 
     name = models.CharField(unique=True, max_length=64, verbose_name='Nombre del archivo', help_text="Nombre del archivo en el que se guarda el audio generado.")
     format_choices=[('mp3','mp3'), ('wav','wav'), ('flac','flac'), ('ogg', 'ogg')]
-    format = models.CharField(choices=format_choices, max_length=16, verbose_name='Formato')
+    format = models.CharField(choices=format_choices, max_length=16, verbose_name='Formato', default="mp3")
     created_at = models.DateTimeField(auto_now=True, verbose_name="Fecha de Creación")
     status_choice = (('Aprobado','Aprobado'), ('En revisión','En revisión'))
     status = models.CharField(choices=status_choice, default="En revisión", max_length=64, verbose_name='Estado')
+    reference = models.CharField(max_length=256, null=True, blank=True, verbose_name='Referencia')
     description = models.CharField(max_length=256, null=True, blank=True, verbose_name='Descripción')
-    text = models.CharField(max_length=512, verbose_name='Texto')
-    audio_file = models.FileField(upload_to=fileName, null=True)
+    text = models.CharField(max_length=4096, verbose_name='Texto')
     created_by = models.ForeignKey(User, null=True, related_name='audios')
-
+    
+    # Cloud Object Storage Bucket
+    # Los datos, como la api key, se obtienen desde la consola de IBM cloud
+    endpoint_url='https://s3.us-south.objectstorage.softlayer.net'
+    bucket_name = 'prueba-text-to-speech'
+    bucket = ibm_boto3.resource('s3',
+                      ibm_api_key_id='yJoxUb3FKZBYaxzTTKJFLHmfiztVJCy81YHFJ1OVQjjp', 
+                      ibm_service_instance_id='crn:v1:bluemix:public:cloud-object-storage:global:a/ce9e974530c83fa4891688cf239a0c9d:c8082bb2-3916-4649-83fc-fdad7999b2c1::',
+                      ibm_auth_endpoint='https://iam.bluemix.net/oidc/token',
+                      config=Config(signature_version='oauth'),
+                      endpoint_url=endpoint_url
+                ).Bucket(bucket_name)
 
     def __str__(self):
         return "%s.%s"%(self.name, self.format)
@@ -140,20 +160,31 @@ class Audio(models.Model):
 
     def createAudio(self):
         rawAudio = text_to_specch.getRawAudio(self.text, "audio/%s"%self.format)
-        print(self.audio_file, bool(self.audio_file))
-        if bool(self.audio_file):
-            os.remove(self.audio_file.path)
-        self.audio_file.save("%s.%s"%(self.name, self.format), ContentFile(rawAudio))
+        audioFile = io.BytesIO(rawAudio)
+        self.bucket.upload_fileobj(audioFile, str(self))
+        # print(self.audio_file, bool(self.audio_file))
+        # if bool(self.audio_file):
+        #     os.remove(self.audio_file.path)
+        # self.audio_file.save("%s.%s"%(self.name, self.format), ContentFile(rawAudio))
     
     def delete(self, *args, **kwargs):
-        self.audio_file.delete()
+        a = self.bucket.Object(str(self)).delete()
+        print(">>>", a)
         super(Audio, self).delete(*args, **kwargs)
 
     @property
     def url(self):
-        return "/media/" + fileName(self, "%s.%s"%(self.name, self.format))
+        return "%s/%s/%s"%(self.endpoint_url,self.bucket_name,str(self))
 
-
-
-
+    def getAudioContent(self):
+        file = '/tmp/%s'%str(self)
+        self.bucket.Object(str(self)).download_file(Filename=file)
+        with open(file, 'rb') as data:
+            content = data.read()
+            print(len(data.read()))
+        os.remove(file)
+        return content
         
+
+
+

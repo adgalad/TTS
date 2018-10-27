@@ -39,12 +39,16 @@
     <li class="nav-item">
       <a class="nav-link" href="{% url 'audios' %}">Mis audios</a>
     </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'newAudio' %}">Crear audio<span class="sr-only">(current)</span></a>
-    </li>
-    <li class="nav-item active">
-      <a class="nav-link" href="{% url 'listReview' %}">En revisión</a>
-    </li>
+    {% if perms.audio.can_create %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'newAudio' %}">Crear audio<span class="sr-only">(current)</span></a>
+        </li>
+    {% endif %}
+    {% if perms.audio.can_aprove %}
+        <li class="nav-item active">
+          <a class="nav-link" href="{% url 'listReview' %}">En revisión</a>
+        </li>
+    {% endif %}
 {% endblock navbar %}
 
 {% block content %}

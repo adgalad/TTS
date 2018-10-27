@@ -122,7 +122,7 @@ class CreateAudio(forms.ModelForm):
 
     class Meta:
         model = models.Audio
-        fields = ("name", "description", "text", 'format')
-        widgets = {
-            'format': forms.RadioSelect(),
-        }
+        fields = ("name", "description", "text")
+        # widgets = {
+        #     'format': forms.RadioSelect(),
+        # }
